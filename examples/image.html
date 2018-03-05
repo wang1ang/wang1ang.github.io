@@ -81,9 +81,12 @@ function draw() {
     console.log(img.height);
     console.log(img);
     var top = 0;
-    for (var i = img.height / 2; i >= 0; i--) {
+    var step_w = max(1, int(img.width / 100));
+    var step_h = max(1, int(img.height / 256));
+    console.log(step_w);
+    for (var i = img.height / 2; i >= 0; i -= step_h) {
       var flag = false;
-      for (var j = 0; j < img.width; j++) {
+      for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(i, j);
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
@@ -97,9 +100,9 @@ function draw() {
     }
     console.log(top);
     var bottom = img.height - 1;
-    for (var i = img.height / 2 + 1; i < img.height; i++) {
+    for (var i = img.height / 2 + 1; i < img.height; i += step_h) {
       var flag = false;
-      for (var j = 0; j < img.width; j++) {
+      for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(i, j);
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
