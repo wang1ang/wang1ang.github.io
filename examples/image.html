@@ -51,15 +51,15 @@ function preload() {
   // to load successfully
   //img = loadImage("moonwalk.jpg");
 }
-var mywidth;
-var myheight;
+var clientWidth;
+var clientHeight;
 function setup() {
   //var canvas = createCanvas(640, 360);
   //canvas.parent("p5container");
   //fullScreen();
-  mywidth = document.documentElement.clientWidth; // displayWidth;
-  myheight = document.documentElement.clientHeight; //displayHeight;
-  createCanvas(mywidth, myheight).drop(gotFile);
+  clientWidth = document.documentElement.clientWidth; // displayWidth;
+  clientHeight = document.documentElement.clientHeight; //displayHeight;
+  createCanvas(clientWidth, clientHeight).drop(gotFile);
   //size(800, 600)
   //surface.setResizable(true);
   //noStroke().fill(0xff).noLoop();
@@ -77,15 +77,58 @@ function draw() {
   background(bg);
   // Displays the image at its actual size at point (0,0)
   if (img) {
+    console.log(img.width);
+    console.log(img.height);
+    console.log(img);
+    var top = 0;
+    for (var i = img.height / 2; i >= 0; i--) {
+      var flag = false;
+      for (var j = 0; j < img.width; j++) {
+        var rgb = img.get(i, j);
+        if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
+          flag = true;
+          break;
+        }
+      }
+      if (!flag) {
+        top = i+1;
+        break;
+      }
+    }
+    console.log(top);
+    var bottom = img.height - 1;
+    for (var i = img.height / 2 + 1; i < img.height; i++) {
+      var flag = false;
+      for (var j = 0; j < img.width; j++) {
+        var rgb = img.get(i, j);
+        if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
+          flag = true;
+          break;
+        }
+      }
+      if (!flag) {
+        bottom = i-1;
+        break;
+      }
+    }
+    console.log(bottom);
     //size(img.width, img.height);
-    target_width = min(mywidth, img.width);
-    target_height = min(myheight, img.height);
-    var margin_w = (mywidth - target_width) / 2;
-    var margin_h = (myheight - target_height) / 2;
-    var top = target_height / 7;
-    var bottom = target_height / 7;
+    target_width = min(clientWidth, img.width);
+    target_height = min(clientHeight, img.height);
+    var ratio = min(target_width / img.width, target_height / img.height);
+    target_width = img.width * ratio;
+    target_height = img.height * ratio; //min(clientHeight, img.height);
+    var margin_w = (clientWidth - target_width) / 2;
+    var margin_h = (clientHeight - target_height) / 2;
+    if (margin_h < 0) margin_h = 0;
+    
+    top = top * ratio;
+    bottom = bottom * ratio;
+    console.log(target_width);
+    console.log(target_height);
     image(img, margin_w, margin_h, target_width, target_height);
-    crop = get(margin_w, margin_h + top, target_width, target_height - top - bottom);
+
+    crop = get(margin_w, margin_h + top, target_width, margin_h + bottom);
     clear();
     image(crop, margin_w, margin_h + top, crop.width, crop.height);
     saved = false;
@@ -96,6 +139,7 @@ function draw() {
   //image(img, 0, height/2, img.width/2, img.height/2);
   //noLoop();
 }
+
 function mousePressed() {
   if (saved == false && crop) {
     crop.save("crop");
