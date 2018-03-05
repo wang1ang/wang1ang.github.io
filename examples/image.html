@@ -81,17 +81,18 @@ function draw() {
     var top = 0;
     var step_w = max(1, int(img.width / 100));
     var step_h = max(1, int(img.height / 256));
-    console.log(step_w);
-    console.log(step_h);
-    for (var i = img.height / 2; i >= 0; i -= step_h) {
+    var anchor = int(img.height / 3);
+    console.log(step_w, step_h);
+    for (var i = anchor; i >= 0; i -= step_h) {
       var flag = false;
-      var prev = img.get(i, 0);
+      var prev = img.get(0, i);
       for (var j = 0; j < img.width; j += step_w) {
-        var rgb = img.get(i, j);
+        var rgb = img.get(j, i);
+        /*
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
           break;
-        }
+        }*/
         if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
           flag = true;
           break;
@@ -103,17 +104,18 @@ function draw() {
         break;
       }
     }
-    console.log(top);
     var bottom = img.height - 1;
-    for (var i = img.height / 2 + 1; i < img.height; i += step_h) {
+    for (var i = anchor + 1; i < img.height; i += step_h) {
       var flag = false;
-      var prev = img.get(i, 0);
+      var prev = img.get(0, i);
       for (var j = 0; j < img.width; j += step_w) {
-        var rgb = img.get(i, j);
+        var rgb = img.get(j, i);
+        /*
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
           break;
         }
+        */
         if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
           flag = true;
           break;
@@ -122,10 +124,15 @@ function draw() {
       }
       if (!flag) {
         bottom = i-1;
+        /*
+        for (var j = 0; j < img.width; j += step_w) {
+          var rgb = img.get(i-15, j);
+          console.log(i, j, rgb[0], rgb[1], rgb[2]);
+        }*/
         break;
       }
     }
-    console.log(bottom);
+    console.log(top, bottom);
     //size(img.width, img.height);
     target_width = min(clientWidth, img.width);
     target_height = min(clientHeight, img.height);
@@ -138,8 +145,7 @@ function draw() {
     
     top = top * ratio;
     bottom = bottom * ratio;
-    console.log(target_width);
-    console.log(target_height);
+    console.log(target_width, target_height);
     image(img, margin_w, margin_h, target_width, target_height);
 
     crop = get(margin_w, margin_h + top, target_width, margin_h + bottom);
