@@ -71,7 +71,8 @@ function setup() {
 
 var saved = true;
 var crop;
-
+var width_sample = 10;
+//var height_sample = 256;
 function draw() {
   //background(0200);
   background(bg);
@@ -79,13 +80,15 @@ function draw() {
   if (img) {
     console.log(img);
     var top = 0;
-    var step_w = max(1, int(img.width / 100));
-    var step_h = max(1, int(img.height / 256));
+    var step_w = max(1, int(img.width / width_sample));
+    var step_h = 1; //max(1, int(img.height / height_sample));
+    var th_diff = min(20, step_w * 2);
     var anchor = int(img.height / 3);
     console.log(step_w, step_h);
     for (var i = anchor; i >= 0; i -= step_h) {
       var flag = false;
       var prev = img.get(0, i);
+      var line_diff = 0;
       for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(j, i);
         /*
@@ -93,7 +96,16 @@ function draw() {
           flag = true;
           break;
         }*/
-        if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+        var diff = max(abs(prev[0] - rgb[0]), abs(prev[1] - rgb[1]), abs(prev[2] - rgb[2]));
+        if (diff > th_diff) {
+          //console.log(i, diff);
+          flag = true;
+          break;
+        }
+        line_diff += diff;
+        //if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+        if (line_diff > width_sample * 2) {
+          //console.log(i, line_diff);
           flag = true;
           break;
         }
@@ -108,6 +120,7 @@ function draw() {
     for (var i = anchor + 1; i < img.height; i += step_h) {
       var flag = false;
       var prev = img.get(0, i);
+      var line_diff = 0;
       for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(j, i);
         /*
@@ -116,7 +129,16 @@ function draw() {
           break;
         }
         */
-        if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+        var diff = max(abs(prev[0] - rgb[0]), abs(prev[1] - rgb[1]), abs(prev[2] - rgb[2]));
+        if (diff > th_diff) {
+          //console.log(i, diff);
+          flag = true;
+          break;
+        }
+        line_diff += diff;
+        //if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+        if (line_diff > width_sample * 2) {
+          //console.log(i, line_diff);
           flag = true;
           break;
         }
@@ -148,7 +170,7 @@ function draw() {
     console.log(target_width, target_height);
     image(img, margin_w, margin_h, target_width, target_height);
 
-    crop = get(margin_w, margin_h + top, target_width, margin_h + bottom);
+    crop = get(margin_w, margin_h + top, target_width, margin_h + bottom - top +1);
     clear();
     image(crop, margin_w, margin_h + top, crop.width, crop.height);
     saved = false;
