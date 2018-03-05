@@ -77,21 +77,26 @@ function draw() {
   background(bg);
   // Displays the image at its actual size at point (0,0)
   if (img) {
-    console.log(img.width);
-    console.log(img.height);
     console.log(img);
     var top = 0;
     var step_w = max(1, int(img.width / 100));
     var step_h = max(1, int(img.height / 256));
     console.log(step_w);
+    console.log(step_h);
     for (var i = img.height / 2; i >= 0; i -= step_h) {
       var flag = false;
+      var prev = img.get(i, 0);
       for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(i, j);
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
           break;
         }
+        if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+          flag = true;
+          break;
+        }
+        prev = rgb;
       }
       if (!flag) {
         top = i+1;
@@ -102,12 +107,18 @@ function draw() {
     var bottom = img.height - 1;
     for (var i = img.height / 2 + 1; i < img.height; i += step_h) {
       var flag = false;
+      var prev = img.get(i, 0);
       for (var j = 0; j < img.width; j += step_w) {
         var rgb = img.get(i, j);
         if (rgb[0] != rgb[1] || rgb[1] != rgb[2] || rgb[0] != rgb[2]) {
           flag = true;
           break;
         }
+        if (prev[0] != rgb[0] || prev[1] != rgb[1] || prev[2] != rgb[2]) {
+          flag = true;
+          break;
+        }
+        prev = rgb;
       }
       if (!flag) {
         bottom = i-1;
