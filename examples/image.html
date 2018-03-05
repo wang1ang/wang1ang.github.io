@@ -57,8 +57,8 @@ function setup() {
   //var canvas = createCanvas(640, 360);
   //canvas.parent("p5container");
   //fullScreen();
-  mywidth = displayWidth;
-  myheight = displayHeight;
+  mywidth = document.documentElement.clientWidth; // displayWidth;
+  myheight = document.documentElement.clientHeight; //displayHeight;
   createCanvas(mywidth, myheight).drop(gotFile);
   //size(800, 600)
   //surface.setResizable(true);
