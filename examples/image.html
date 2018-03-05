@@ -51,8 +51,8 @@ function preload() {
   // to load successfully
   //img = loadImage("moonwalk.jpg");
 }
-var mywidth = displayWidth;
-var myheight = displayHeight;
+var mywidth;
+var myheight;
 function setup() {
   //var canvas = createCanvas(640, 360);
   //canvas.parent("p5container");
@@ -69,6 +69,9 @@ function setup() {
   bg = color(0o200);
 }
 
+var saved = true;
+var crop;
+
 function draw() {
   //background(0200);
   background(bg);
@@ -79,12 +82,13 @@ function draw() {
     target_height = min(myheight, img.height);
     var margin_w = (mywidth - target_width) / 2;
     var margin_h = (myheight - target_height) / 2;
-    var top = target_height / 4;
-    var bottom = target_height / 4;
+    var top = target_height / 7;
+    var bottom = target_height / 7;
     image(img, margin_w, margin_h, target_width, target_height);
-    var crop = get(margin_w, margin_h + top, target_width, target_height - top - bottom);
+    crop = get(margin_w, margin_h + top, target_width, target_height - top - bottom);
     clear();
     image(crop, margin_w, margin_h + top, crop.width, crop.height);
+    saved = false;
   } else {
     text('Drag an image file onto the canvas.', width >> 1, height >> 1);
   }
@@ -92,12 +96,17 @@ function draw() {
   //image(img, 0, height/2, img.width/2, img.height/2);
   //noLoop();
 }
+function mousePressed() {
+  if (saved == false && crop) {
+    crop.save("crop");
+    saved = true;
+  }
+}
 
 function gotFile(file) {
   if (file.type == 'image') {
     //img = createImg(file.data).hide(), redraw();
     img = loadImage(file.data, redraw);
-    console.log(file);
   } else {
     print('Not an image file!');
   }
@@ -108,8 +117,6 @@ function readURL(input) {
         reader.onload = function(e) {
             //$('#blah').attr('src', e.target.result).width(150).height(200);
             img = loadImage(e.target.result, redraw);
-            console.log(img.height);
-            console.log(img.width);
         };
         reader.readAsDataURL(input.files[0]);
     }
