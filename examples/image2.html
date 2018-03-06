@@ -16,6 +16,9 @@ canvas {
   left: 0;
   display: block;
 }
+img {
+  width: 100%
+}
 /* Content */
 
 .content {
@@ -55,38 +58,45 @@ canvas {
   </div>
   <!--img id="scream" src="../test1.jpg" alt="The Scream" width="220" height="277"-->
 
-  <canvas id="myCanvas" width="300" height="300">
+  <!--canvas id="myCanvas" width="300" height="300">
     Your browser does not support the HTML5 canvas tag.
-  </canvas>
+  </canvas-->
 
   <script>
-var img = new Image();
 var width_sample = 10;
-
-img.onload = function() {
+function saveImage()
+{
+  alert('here');
+}
+function ProcessAndShow()
+{
   console.log(this.width, this.height);
-  var c = document.getElementById("myCanvas");
+  var c = document.createElement("canvas");
+  //c.onclick = saveImage;
+  //c.setAttribute("id", "Canvas" + i);
+  //document.body.appendChild(c);
+  //var c = document.getElementById("Canvas");
   var ctx = c.getContext("2d");
   ctx.canvas.width = this.width;
   ctx.canvas.height = this.height;
-  ctx.drawImage(img, 0, 0);
+  ctx.drawImage(this, 0, 0);
   var imgData = ctx.getImageData(0, 0, c.width, c.height);
   console.log(imgData);
   
     var top = 0;
-    var step_w = Math.max(1, Math.floor(img.width / width_sample));
-    var step_h = 1; //Math.max(1, Math.floor(img.height / height_sample));
+    var step_w = Math.max(1, Math.floor(this.width / width_sample));
+    var step_h = 1; //Math.max(1, Math.floor(this.height / height_sample));
     var th_diff = Math.min(20, step_w * 2);
-    var anchor = Math.floor(img.height / 3);
+    var anchor = Math.floor(this.height / 3);
     console.log(step_w, step_h);
-    var stride = img.width * 4;
+    var stride = this.width * 4;
     for (var i = anchor; i >= 0; i -= step_h) {
       var flag = false;
       var prev_b = imgData.data[i * stride];
       var prev_g = imgData.data[i * stride + 1];
       var prev_r = imgData.data[i * stride + 2];
       var line_diff = 0;
-      for (var j = 0; j < img.width; j += step_w) {
+      for (var j = 0; j < this.width; j += step_w) {
         var b = imgData.data[i * stride + j * 4];
         var g = imgData.data[i * stride + j * 4 + 1];
         var r = imgData.data[i * stride + j * 4 + 2];
@@ -117,14 +127,14 @@ img.onload = function() {
         break;
       }
     }
-    var bottom = img.height - 1;
-    for (var i = anchor + 1; i < img.height; i += step_h) {
+    var bottom = this.height - 1;
+    for (var i = anchor + 1; i < this.height; i += step_h) {
       var flag = false;
       var prev_b = imgData.data[i * stride];
       var prev_g = imgData.data[i * stride + 1];
       var prev_r = imgData.data[i * stride + 2];
       var line_diff = 0;
-      for (var j = 0; j < img.width; j += step_w) {
+      for (var j = 0; j < this.width; j += step_w) {
         var b = imgData.data[i * stride + j * 4];
         var g = imgData.data[i * stride + j * 4 + 1];
         var r = imgData.data[i * stride + j * 4 + 2];
@@ -154,29 +164,30 @@ img.onload = function() {
       if (!flag) {
         bottom = i-1;
         /*
-        for (var j = 0; j < img.width; j += step_w) {
-          var rgb = img.get(i-15, j);
+        for (var j = 0; j < this.width; j += step_w) {
+          var rgb = this.get(i-15, j);
           console.log(i, j, rgb[0], rgb[1], rgb[2]);
         }*/
         break;
       }
     }
     console.log(top, bottom);
-  
+  /*
   for (var i = 0; i < top; i++) {
-    for (var j = 0; j < img.width; j++) {
+    for (var j = 0; j < this.width; j++) {
       imgData.data[i * stride + j * 4] = 255;
       imgData.data[i * stride + j * 4 + 1] = 255;
       imgData.data[i * stride + j * 4 + 2] = 255;
     }
   }
-  for (var i = bottom + 1; i < img.height; i++) {
-    for (var j = 0; j < img.width; j++) {
+  for (var i = bottom + 1; i < this.height; i++) {
+    for (var j = 0; j < this.width; j++) {
       imgData.data[i * stride + j * 4] = 255;
       imgData.data[i * stride + j * 4 + 1] = 255;
       imgData.data[i * stride + j * 4 + 2] = 255;
     }
   }
+  */
   var imgData = ctx.getImageData(0, top, c.width, bottom - top + 1);
   ctx.canvas.height = bottom - top + 1;
 
@@ -190,6 +201,9 @@ img.onload = function() {
   }
   */
   ctx.putImageData(imgData, 0, 0);
+  var img = document.createElement("img");
+  img.src = c.toDataURL("image/png");
+  document.body.appendChild(img);
   //window.open(ctx.canvas.toDataURL('image/png'));
   /*
   var gh = ctx.canvas.toDataURL('png');
@@ -220,19 +234,28 @@ document.getElementById("scream").onload = function () {
     ctx.putImageData(imgData, 0, 0);
 };
 */
-function readURL(input) {
-    var fileName = '';
-    if (input.files && input.files[0]) {
-        fileName = (input.getAttribute('data-multiple-caption') || '').replace('{count}', input.files.length);
+function clearCanvas() {
+  var cs = document.body.querySelectorAll("img");
+  cs.forEach(function(c) { document.body.removeChild(c); });
+}
 
+function readURL(input) {
+  clearCanvas();
+  var fileName = '';
+  if (input.files && input.files[0]) {
+      fileName = (input.getAttribute('data-multiple-caption') || '').replace('{count}', input.files.length);
+      for (var i = 0; i < input.files.length; i++) {
         var reader = new FileReader();
         reader.onload = function(e) {
             //$('#scream').attr('src', e.target.result).width(150).height(200);
+            var img = new Image();
+            img.onload = ProcessAndShow;
             img.src = e.target.result;
         };
-        reader.readAsDataURL(input.files[0]);
-    }
-}
+        reader.readAsDataURL(input.files[i]);
+      }
+  }
+};
 
   </script>
 
