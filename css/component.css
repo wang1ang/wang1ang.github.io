@@ -3,6 +3,7 @@
     height: 0.1px;
     opacity: 0;
     overflow: hidden;
+    display: hidden;
     position: absolute;
     z-index: -1;
 }
