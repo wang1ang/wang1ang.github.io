@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html>
+<head>
+  		<meta charset="UTF-8" />
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>image clipper</title>
+		<meta name="description" content="Auto-cropping images" />
+		<meta name="keywords" content="crop images" />
+		<meta name="author" content="wang1ang" />
+        <link rel="stylesheet" type="text/css" href="../css/component.css" />
+  <style>
+
+canvas {
+  position: absolute;
+  left: 0;
+  display: block;
+}
+img {
+  width: 100%
+}
+/* Content */
+
+.content {
+	width: 100%;
+	max-width: 800px;
+	text-align: center;
+	margin: 0 auto;
+	padding: 0 0 3em 0;
+}
+
+.content footer {
+	color: #b39295;
+	margin-top: 40px;
+}
+
+.content footer a:hover,
+.content footer a:focus {
+	color: #4b0f31;
+}
+
+.box {
+	background-color: #dfc8ca;
+	padding: 6.25rem 1.25rem;
+}
+  </style>
+  <script src="../javascript/jquery.min.js"></script>
+</head>
+<body>
+  <div class="content">
+  <div class="box">
+    <input type="file" id="file" onchange="readURL(this);" data-multiple-caption="{count} image(s) selected" multiple class="inputfile inputfile-1" />
+    <label for="file">
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewBox="0 0 20 17"><path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z"/></svg>
+      <span><strong>Choose images to process&hellip;</strong></span>
+    </label>
+    <input type="text" id="h1"></input>
+    <input type="text" id="h2"></input>
+  </div>
+  </div>
+  <!--img id="scream" src="../test1.jpg" alt="The Scream" width="220" height="277"-->
+
+  <!--canvas id="myCanvas" width="300" height="300">
+    Your browser does not support the HTML5 canvas tag.
+  </canvas-->
+  <canvas id="plotCanvas"></canvas>
+  <script>
+var width_sample = 10;
+function saveImage()
+{
+  alert('here');
+}
+
+/**
+ * Converts an RGB color value to HSV. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes r, g, and b are contained in the set [0, 255] and
+ * returns h, s, and v in the set [0, 1].
+ *
+ * @param   Number  r       The red color value
+ * @param   Number  g       The green color value
+ * @param   Number  b       The blue color value
+ * @return  Array           The HSV representation
+ */
+function rgbToHsv(r, g, b) {
+  r /= 255, g /= 255, b /= 255;
+
+  var max = Math.max(r, g, b), min = Math.min(r, g, b);
+  var h, s, v = max;
+
+  var d = max - min;
+  s = max == 0 ? 0 : d / max;
+
+  if (max == min) {
+    h = 0; // achromatic
+  } else {
+    switch (max) {
+      case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+      case g: h = (b - r) / d + 2; break;
+      case b: h = (r - g) / d + 4; break;
+    }
+
+    h /= 6;
+  }
+
+  return [ h, s, v ];
+}
+
+/**
+ * Converts an HSV color value to RGB. Conversion formula
+ * adapted from http://en.wikipedia.org/wiki/HSV_color_space.
+ * Assumes h, s, and v are contained in the set [0, 1] and
+ * returns r, g, and b in the set [0, 255].
+ *
+ * @param   Number  h       The hue
+ * @param   Number  s       The saturation
+ * @param   Number  v       The value
+ * @return  Array           The RGB representation
+ */
+function hsvToRgb(h, s, v) {
+  var r, g, b;
+
+  var i = Math.floor(h * 6);
+  var f = h * 6 - i;
+  var p = v * (1 - s);
+  var q = v * (1 - f * s);
+  var t = v * (1 - (1 - f) * s);
+
+  switch (i % 6) {
+    case 0: r = v, g = t, b = p; break;
+    case 1: r = q, g = v, b = p; break;
+    case 2: r = p, g = v, b = t; break;
+    case 3: r = p, g = q, b = v; break;
+    case 4: r = t, g = p, b = v; break;
+    case 5: r = v, g = p, b = q; break;
+  }
+
+  return [ r * 255, g * 255, b * 255 ];
+}
+var hist = [];
+function ProcessAndShow()
+{
+  //var h1 = 10/360.0, h2 = (h1+180)/360.0;
+  var h1 = 0.02, h2 = (h1 + .5) % 1;
+  console.log(this.width, this.height);
+  var c = document.createElement("canvas");
+  //c.onclick = saveImage;
+  //c.setAttribute("id", "Canvas" + i);
+  //document.body.appendChild(c);
+  //var c = document.getElementById("Canvas");
+  var ctx = c.getContext("2d");
+  ctx.canvas.width = this.width;
+  ctx.canvas.height = this.height;
+  ctx.drawImage(this, 0, 0);
+  var imgData = ctx.getImageData(0, 0, c.width, c.height);
+  console.log(imgData);
+  width = this.width;
+  height = this.height;
+  stride = width * 4;
+  hist = [];
+  for (var i = 0; i < 361; i++)
+    hist[i] = 0;
+  for (var i = 0; i < height; i++) {
+    for (var j = 0; j < width; j++) {
+        var r = imgData.data[i * stride + j * 4];
+        var g = imgData.data[i * stride + j * 4 + 1];
+        var b = imgData.data[i * stride + j * 4 + 2];
+        [h,s,v] = rgbToHsv(r,g,b);
+        hi = Math.round(h * 360);
+        if (s > 0)
+            hist[hi] = hist[hi] + 1;
+        d1 = Math.min(Math.abs(h1-h), Math.abs(h1+1-h));
+        d2 = Math.min(Math.abs(h2-h), Math.abs(h2+1-h));
+        if (d1 < d2) h = h1;
+        else h = h2;
+        /*if (i == height - 1 && d1 < 0.1 && s > 0) {
+            h = h1;
+            console.log(i, j, r,g,b,h);
+        }*/
+        [r,g,b] = hsvToRgb(h,s,v);
+        imgData.data[i * stride + j * 4] = r;
+        imgData.data[i * stride + j * 4 + 1] = g;
+        imgData.data[i * stride + j * 4 + 2] = b;
+    }
+  }
+
+  ctx.putImageData(imgData, 0, 0);
+  var img = document.createElement("img");
+  img.src = c.toDataURL("image/png");
+  document.body.appendChild(img);
+  //window.open(ctx.canvas.toDataURL('image/png'));
+  /*
+  var gh = ctx.canvas.toDataURL('png');
+  var a = document.createElement('a');
+  a.href = gh;
+  a.download = 'image.png';
+  a.click();
+  */
+  plot();
+  return hist;
+};
+function plot()
+{
+  var canvas = document.getElementById("plotCanvas");
+  var theContext = canvas.getContext("2d");
+  var width = 722;
+  var height = 400;
+  canvas.width = width;
+  canvas.height = height;
+  var uSpacing = 10;
+  var border = 20;
+  var offset = (1 / (hist.length - 1)) * width;
+  var s = (height-1) / Math.max.apply(Math, hist);
+  console.log(s);
+  theContext.strokeRect(0, 0, width, height)
+
+  theContext.beginPath();
+  theContext.moveTo(0, height - hist[0]*s);
+  for (var h = 1; h < 360; h++) {
+    [r,g,b] = hsvToRgb(h/360.0, 1, 1);
+    theContext.strokeStyle = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+    console.log(h, r,g,b);
+    theContext.lineTo(h * offset, height - hist[h]*s);
+    theContext.stroke();
+    theContext.beginPath();
+    theContext.moveTo(h * offset, height - hist[h]*s);
+    
+  }
+  //theContext.stroke();
+}
+/*
+document.getElementById("scream").onload = function () {
+    var c = document.getElementById("myCanvas");
+    var ctx = c.getContext("2d");
+    ctx.canvas.width = this.width;
+    ctx.canvas.height = this.height;
+    
+    var img = document.getElementById("scream");
+    console.log(img);
+    ctx.drawImage(img, 0, 0);
+    var imgData = ctx.getImageData(0, 0, c.width, c.height);
+    // invert colors
+    for (var i = 0; i < imgData.data.length; i += 4) {
+        imgData.data[i] = 255 - imgData.data[i];
+        imgData.data[i + 1] = 255 - imgData.data[i + 1];
+        imgData.data[i + 2] = 255 - imgData.data[i + 2];
+        imgData.data[i + 3] = 255;
+    }
+    ctx.putImageData(imgData, 0, 0);
+};
+*/
+function clearCanvas() {
+  var cs = document.body.querySelectorAll("img");
+  cs.forEach(function(c) { document.body.removeChild(c); });
+}
+
+function readURL(input) {
+  clearCanvas();
+  var fileName = '';
+  if (input.files && input.files[0]) {
+      fileName = (input.getAttribute('data-multiple-caption') || '').replace('{count}', input.files.length);
+      for (var i = 0; i < input.files.length; i++) {
+        var reader = new FileReader();
+        reader.onload = function(e) {
+            //$('#scream').attr('src', e.target.result).width(150).height(200);
+            var img = new Image();
+            img.onload = ProcessAndShow;
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(input.files[i]);
+      }
+  }
+};
+
+  </script>
+
+</body>
+</html>
