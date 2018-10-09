@@ -27,6 +27,18 @@
     var color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
     $("#slider2" ).css( "background", color);
   }
+  function resizeCanvas() {
+ 
+    $("#plotCanvas").css("width", $("#slider1").width()); //$(".box").outerWidth()); //css("width"));
+    $("#plotCanvas").css("margin", 0);
+    
+    /**
+     * Your drawings need to be inside this function otherwise they will be reset when 
+     * you resize the browser window and the canvas goes will be cleared.
+     */
+    //drawStuff(); 
+  }
+
   $( function() {
     $( "#slider1" ).slider({
       orientation: "horizontal",
@@ -45,7 +57,10 @@
       change: refreshH2
     });
     refreshH1(); refreshH2();
-  } );
+    // resize the canvas to fill browser window dynamically
+    window.addEventListener('resize', resizeCanvas, false);
+    resizeCanvas();
+  });
   
   </script>
   <link rel="stylesheet" type="text/css" href="../css/component.css" />
@@ -58,11 +73,9 @@ img {
 .slider {
   text-align: center;
   margin: auto;
-  /*width: 722px;*/
 }
 #color {
   text-align: center;
-  width: 722px;
   margin: auto;
 }
 
@@ -71,7 +84,7 @@ img {
 	max-width: 800px;
 	text-align: center;
 	margin: 0 auto;
-	padding: 0 0 3em 0;
+	padding: 0 0 0em 0;
 }
 
 .content footer {
@@ -86,7 +99,7 @@ img {
 
 .box {
 	background-color: #dfc8ca;
-	padding: 6.25rem 1.25rem;
+	padding: 1.25rem 1.25rem;
 }
   </style>
 </head>
@@ -109,7 +122,7 @@ img {
     <input type="text" id="h1"></input>
     <input type="text" id="h2"></input>
     <button type="button" onclick="refresh()">refresh</button>
-    <canvas id="plotCanvas" width="722" height="50" style="border:1px solid #c3c3c3;"></canvas>
+    <canvas id="plotCanvas" height="50" style="border:1px solid #c3c3c3;"></canvas>
     <div class="slide" id="slider1"></div>
     <div class="slide" id="slider2"></div>
   </div>
@@ -256,17 +269,19 @@ function ProcessAndShow()
 };
 function plot()
 {
+  resizeCanvas();
   var canvas = document.getElementById("plotCanvas");
   var theContext = canvas.getContext("2d");
-  var width = 722;
-  var height = 50;
-  canvas.width = width;
-  canvas.height = height;
-  var uSpacing = 10;
-  var border = 20;
-  var offset = (1 / (hist.length - 1)) * width;
+  var width = canvas.width;
+  var height = canvas.height;
+  console.log(width, height);
+  //canvas.width = width;
+  //canvas.height = height;
+  //var uSpacing = 10;
+  //var border = 20;
+  var offset = (1 / (hist.length - 1)) * (width);
   var s = (height-1) / Math.max.apply(Math, hist);
-  theContext.strokeRect(0, 0, width, height)
+  //theContext.strokeRect(0, 0, width, height)
 
   theContext.beginPath();
   theContext.moveTo(0, height - hist[0]*s);
@@ -277,7 +292,7 @@ function plot()
     theContext.stroke();
     theContext.beginPath();
     theContext.moveTo(h * offset, height - hist[h]*s);
-    
+    console.log(h * offset);
   }
   //theContext.stroke();
 }
