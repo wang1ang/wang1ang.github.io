@@ -1,25 +1,70 @@
 <!DOCTYPE html>
 <html>
 <head>
-  		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge">
-		<meta name="viewport" content="width=device-width, initial-scale=1">
-		<title>image clipper</title>
-		<meta name="description" content="Auto-cropping images" />
-		<meta name="keywords" content="crop images" />
-		<meta name="author" content="wang1ang" />
-        <link rel="stylesheet" type="text/css" href="../css/component.css" />
+  	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>image clipper</title>
+	<meta name="description" content="Auto-cropping images" />
+	<meta name="keywords" content="crop images" />
+	<meta name="author" content="wang1ang" />
+  <link rel="stylesheet" href="../javascript/jquery-ui-1.12.1/jquery-ui.min.css">
+  <script src="../javascript/jquery-3.3.1.min.js"></script>
+  <script src="../javascript/jquery-ui-1.12.1/jquery-ui.min.js"></script>
+  <script>
+  function refreshH1() {
+    var h1 = $("#slider1").slider("value");
+    $("#h1").val(h1);
+    [r,g,b] = hsvToRgb(h1/360.0, 1, 1);
+    var color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+    $("#slider1" ).css( "background", color);
+    $("#slider2").slider("value", (h1+180) % 360);
+  }
+  function refreshH2() {
+    var h2 = $("#slider2").slider("value");
+    $("#h2").val(h2);
+    [r,g,b] = hsvToRgb(h2/360.0, 1, 1);
+    var color = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
+    $("#slider2" ).css( "background", color);
+  }
+  $( function() {
+    $( "#slider1" ).slider({
+      orientation: "horizontal",
+      //range: "min",
+      max: 359,
+      value: 10,
+      slide: refreshH1,
+      change: refreshH1
+    });
+    $( "#slider2" ).slider({
+      orientation: "horizontal",
+      //range: "min",
+      max: 359,
+      value: 190,
+      slide: refreshH2,
+      change: refreshH2
+    });
+    refreshH1(); refreshH2();
+  } );
+  
+  </script>
+  <link rel="stylesheet" type="text/css" href="../css/component.css" />
   <style>
 
-canvas {
-  position: absolute;
-  left: 0;
-  display: block;
-}
 img {
   width: 100%
 }
-/* Content */
+
+.slider {
+  text-align: center;
+  margin: auto;
+  /*width: 722px;*/
+}
+#color {
+  text-align: center;
+  width: 722px;
+  margin: auto;
+}
 
 .content {
 	width: 100%;
@@ -44,7 +89,6 @@ img {
 	padding: 6.25rem 1.25rem;
 }
   </style>
-  <script src="../javascript/jquery.min.js"></script>
 </head>
 <body>
   <div class="content">
@@ -54,8 +98,6 @@ img {
       <svg xmlns="http://www.w3.org/2000/svg" width="20" height="17" viewBox="0 0 20 17"><path d="M10 0l-5.2 4.9h3.3v5.1h3.8v-5.1h3.3l-5.2-4.9zm9.3 11.5l-3.2-2.1h-2l3.4 2.6h-3.5c-.1 0-.2.1-.2.1l-.8 2.3h-6l-.8-2.2c-.1-.1-.1-.2-.2-.2h-3.6l3.4-2.6h-2l-3.2 2.1c-.4.3-.7 1-.6 1.5l.6 3.1c.1.5.7.9 1.2.9h16.3c.6 0 1.1-.4 1.3-.9l.6-3.1c.1-.5-.2-1.2-.7-1.5z"/></svg>
       <span><strong>Choose images to process&hellip;</strong></span>
     </label>
-    <input type="text" id="h1"></input>
-    <input type="text" id="h2"></input>
   </div>
   </div>
   <!--img id="scream" src="../test1.jpg" alt="The Scream" width="220" height="277"-->
@@ -63,7 +105,14 @@ img {
   <!--canvas id="myCanvas" width="300" height="300">
     Your browser does not support the HTML5 canvas tag.
   </canvas-->
-  <canvas id="plotCanvas"></canvas>
+  <div id="color">
+    <input type="text" id="h1"></input>
+    <input type="text" id="h2"></input>
+    <button type="button" onclick="refresh()">refresh</button>
+    <canvas id="plotCanvas" width="722" height="50" style="border:1px solid #c3c3c3;"></canvas>
+    <div class="slide" id="slider1"></div>
+    <div class="slide" id="slider2"></div>
+  </div>
   <script>
 var width_sample = 10;
 function saveImage()
@@ -138,24 +187,24 @@ function hsvToRgb(h, s, v) {
   return [ r * 255, g * 255, b * 255 ];
 }
 var hist = [];
-function ProcessAndShow()
+function Process(img)
 {
-  //var h1 = 10/360.0, h2 = (h1+180)/360.0;
-  var h1 = 0.02, h2 = (h1 + .5) % 1;
-  console.log(this.width, this.height);
+  var h1 = parseInt(document.getElementById("h1").value) / 360.0;
+  var h2 = parseInt(document.getElementById("h2").value) / 360.0;
+  console.log(img.width, img.height);
+  // verture canvas
   var c = document.createElement("canvas");
   //c.onclick = saveImage;
   //c.setAttribute("id", "Canvas" + i);
   //document.body.appendChild(c);
   //var c = document.getElementById("Canvas");
   var ctx = c.getContext("2d");
-  ctx.canvas.width = this.width;
-  ctx.canvas.height = this.height;
-  ctx.drawImage(this, 0, 0);
+  ctx.canvas.width = img.width;
+  ctx.canvas.height = img.height;
+  ctx.drawImage(img, 0, 0);
   var imgData = ctx.getImageData(0, 0, c.width, c.height);
-  console.log(imgData);
-  width = this.width;
-  height = this.height;
+  width = img.width;
+  height = img.height;
   stride = width * 4;
   hist = [];
   for (var i = 0; i < 361; i++)
@@ -188,6 +237,12 @@ function ProcessAndShow()
   var img = document.createElement("img");
   img.src = c.toDataURL("image/png");
   document.body.appendChild(img);
+}
+function ProcessAndShow()
+{
+  console.log("Process");
+  images.push(this);
+  Process(this);
   //window.open(ctx.canvas.toDataURL('image/png'));
   /*
   var gh = ctx.canvas.toDataURL('png');
@@ -204,14 +259,13 @@ function plot()
   var canvas = document.getElementById("plotCanvas");
   var theContext = canvas.getContext("2d");
   var width = 722;
-  var height = 400;
+  var height = 50;
   canvas.width = width;
   canvas.height = height;
   var uSpacing = 10;
   var border = 20;
   var offset = (1 / (hist.length - 1)) * width;
   var s = (height-1) / Math.max.apply(Math, hist);
-  console.log(s);
   theContext.strokeRect(0, 0, width, height)
 
   theContext.beginPath();
@@ -219,7 +273,6 @@ function plot()
   for (var h = 1; h < 360; h++) {
     [r,g,b] = hsvToRgb(h/360.0, 1, 1);
     theContext.strokeStyle = 'rgb(' + Math.round(r) + ',' + Math.round(g) + ',' + Math.round(b) + ')';
-    console.log(h, r,g,b);
     theContext.lineTo(h * offset, height - hist[h]*s);
     theContext.stroke();
     theContext.beginPath();
@@ -249,26 +302,33 @@ document.getElementById("scream").onload = function () {
     ctx.putImageData(imgData, 0, 0);
 };
 */
-function clearCanvas() {
+function clearImages() {
   var cs = document.body.querySelectorAll("img");
   cs.forEach(function(c) { document.body.removeChild(c); });
 }
-
+function refresh() {
+  clearImages();
+  for (var i = 0; i < images.length; i++) {
+    Process(images[i]);
+  }
+}
+var images = [];
 function readURL(input) {
-  clearCanvas();
+  clearImages();
   var fileName = '';
   if (input.files && input.files[0]) {
-      fileName = (input.getAttribute('data-multiple-caption') || '').replace('{count}', input.files.length);
-      for (var i = 0; i < input.files.length; i++) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-            //$('#scream').attr('src', e.target.result).width(150).height(200);
-            var img = new Image();
-            img.onload = ProcessAndShow;
-            img.src = e.target.result;
-        };
-        reader.readAsDataURL(input.files[i]);
-      }
+    fileName = (input.getAttribute('data-multiple-caption') || '').replace('{count}', input.files.length);
+    images = [];
+    for (var i = 0; i < input.files.length; i++) {
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        //$('#scream').attr('src', e.target.result).width(150).height(200);
+        img = new Image();
+        img.onload = ProcessAndShow;
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(input.files[i]);
+    }
   }
 };
 
