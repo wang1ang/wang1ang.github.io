@@ -272,6 +272,7 @@ function plot()
   resizeCanvas();
   var canvas = document.getElementById("plotCanvas");
   var theContext = canvas.getContext("2d");
+  theContext.clearRect(0, 0, canvas.width, canvas.height);
   var width = canvas.width;
   var height = canvas.height;
   console.log(width, height);
